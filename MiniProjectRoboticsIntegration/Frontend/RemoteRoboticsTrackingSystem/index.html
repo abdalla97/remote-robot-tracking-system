@@ -1,0 +1,112 @@
+<html>
+  <head>
+    <title>Remote Robotics</title>
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      window.onload = function() {
+        var dps = []; // dataPoints
+        var chart = new CanvasJS.Chart("chartContainer", {
+          title: {
+            text: "Live view of the data"
+          },
+          data: [
+            {
+              type: "line",
+              dataPoints: dps
+            }
+          ]
+        });
+
+        var updateInterval = 1000;
+        var dataLength = 20; // number of dataPoints visible at any point
+
+        var updateChart = function(count) {
+          var URL =
+            "https://abdullah97ahmed.pythonanywhere.com/returncoordinates";
+          $.getJSON(URL, function(d) {
+            dps.push({
+              x: d.x,
+              y: d.y
+            });
+          });
+
+          if (dps.length > dataLength) {
+            dps.shift();
+          }
+
+          chart.render();
+        };
+
+        updateChart(dataLength);
+        setInterval(function() {
+          updateChart();
+        }, updateInterval);
+      };
+    </script>
+
+    <script type="text/javascript">
+      function UpdateDivID() {
+        var URL =
+          "https://abdullah97ahmed.pythonanywhere.com/returncoordinates";
+        $.getJSON(URL, function(d) {
+          console.log(d);
+
+          $(document).ready(function() {
+            $("#coordinates").text(
+              "x: " + d.x + " " + "y: " + d.y + " " + "theta: " + d.theta
+            );
+
+            const canvas = document.querySelector("#canvas");
+
+            if (!canvas.getContext) {
+              return;
+            }
+            const ctx = canvas.getContext("2d");
+
+            context = canvas.getContext("2d");
+
+            make_base();
+
+            function make_base() {
+              base_image = new Image();
+              base_image.src = "turtle.png";
+              base_image.onload = function() {
+                context.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+                context.drawImage(
+                  base_image,
+                  d.x * 50 + 0,
+                  d.y * 50 + 0,
+                  50,
+                  50
+                );
+              };
+            }
+          });
+        });
+      }
+      setInterval("UpdateDivID()", 1000);
+    </script>
+  </head>
+
+  <body>
+    <h1>Remote Robot Tracking System</h1>
+
+    <p id="coordinates">The coordinates:</p>
+    <canvas
+      id="canvas"
+      height="500"
+      width="500"
+      style="background-color: aqua;"
+    >
+    </canvas>
+    <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src="scripts.js"></script>
+  </body>
+</html>
